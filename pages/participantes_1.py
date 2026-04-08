@@ -168,7 +168,7 @@ pizza = base.mark_arc(innerRadius=100).encode(
 
 # Texto centralizado nas fatias
 texto = base.mark_text(
-    radius=135,  # Distância do centro. Aumente para afastar do meio.
+    radius=120,  # Distância do centro. Aumente para afastar do meio.
     size=14, 
     fontWeight="bold",
     fill="black" # Ou "white" se a fatia for muito escura
@@ -181,8 +181,8 @@ texto = base.mark_text(
 )
 
 graf_bolsa = (pizza + texto).properties(
-    width=400,
-    height=400,
+    width=350,
+    height=350,
     title="Tipo de bolsa"
 ).configure_view(
     strokeWidth=0  # Remove a borda externa do gráfico
@@ -213,7 +213,7 @@ graf_discente_ano = (
         order=alt.Order("ano_projeto:N")
     )
     .properties(
-        height=400,
+        height=350,
         title="Total de discentes envolvidos por ano"
     )
 )
@@ -255,7 +255,7 @@ pizza = base.mark_arc().encode(
 
 # Texto centralizado nas fatias
 texto = base.mark_text(
-    radius=135,  # Distância do centro. Aumente para afastar do meio.
+    radius=110,  # Distância do centro. Aumente para afastar do meio.
     size=14, 
     fontWeight="bold",
     fill="black" # Ou "white" se a fatia for muito escura
@@ -268,8 +268,8 @@ texto = base.mark_text(
 )
 
 graf_membro = (pizza + texto).properties(
-    width=400,
-    height=400,
+    width=350,
+    height=350,
     title="Tipo de vínculo do extensionista"
 ).configure_view(
     strokeWidth=0  # Remove a borda externa do gráfico
@@ -297,10 +297,12 @@ graf_discente = (
         ]
     )
     .properties(
-        height=400,
+        height=350,
         title="Taxa de discentes envolvidos por centro"
     )
 )
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 with st.container():
     col_1, col_2, col_3 = st.columns(3)
@@ -314,11 +316,13 @@ with st.container():
     with col_3:
         st.altair_chart(graf_membro, use_container_width=True)
 
+st.markdown("<br>", unsafe_allow_html=True)
+
 with st.container():
     col_1, col_2 = st.columns(2)
 
     with col_1:
-        st.dataframe(df_lista, hide_index=True)
+        st.dataframe(df_lista, hide_index=True, height=350)
 
     with col_2:
         st.altair_chart(graf_discente, use_container_width=True)

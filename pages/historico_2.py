@@ -59,7 +59,7 @@ with st.sidebar:
     st.title("Filtros")
     teste = df_projeto[["ano_projeto"]]
     teste = teste[teste['ano_projeto'] > 2016]
-    teste
+    
     # ----------- ANO -----------
     if "filtro_ano" not in st.session_state:
         st.session_state.filtro_ano = sorted(teste["ano_projeto"].unique())
@@ -199,8 +199,12 @@ graf = (
     .properties(height=400)
 )
 
+st.markdown("<br>", unsafe_allow_html=True)
+
 with st.container():
-    st.altair_chart(graf, use_container_width=True)
+    st.altair_chart(graf, use_container_width=True, height=350)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 with st.container():
     col_1, col_2 = st.columns(2)

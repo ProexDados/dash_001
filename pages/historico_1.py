@@ -43,7 +43,7 @@ df_projeto["ano_projeto"] = pd.to_numeric(df_projeto["ano_projeto"])
 
 df_filtrado = df_projeto.copy()
 
-df_filtrado = df_filtrado[df_filtrado['ano_projeto'] < 2030]
+df_filtrado = df_filtrado[(df_filtrado['ano_projeto'] > 2016) & (df_filtrado['ano_projeto'] < 2030)]
 
 # ---------- FILTROS ----------
 with st.sidebar:
@@ -93,6 +93,8 @@ df_filtrado = df_filtrado.sort_values(by='ano_projeto', ascending=False)
 total_acoes = len(df_filtrado)
 
 # --------- DASHBOARD ---------
+st.markdown("<br>", unsafe_allow_html=True)
+
 with st.container():
     col_1, col_2 = st.columns((2, 8))
 
@@ -162,6 +164,8 @@ graf_categoria = (
         title="Quantidade de ações por tipos de atividades de extensão"
     )
 )
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 with st.container():
     col_1, col_2 = st.columns(2)
