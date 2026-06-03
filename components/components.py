@@ -19,7 +19,7 @@ class Components:
                 justify-content: space-between;
             ">
                 <p style="color: white; font-weight: bold;">{label}</p>
-                <h2 style="color: white;">{value}</h2>
+                <h1 style="color: white;">{value}</h1>
                 <p style="color: white;">{delta}</p>
             </div>
             """,

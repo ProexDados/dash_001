@@ -12,10 +12,6 @@ class Files:
 
     @st.cache_data
     def membro_projeto(_self):
-        # return pd.read_csv(
-        #     f"{_self.path}/membro_projeto.csv", 
-        #     sep=";"
-        # )
         headers = {
             "Authorization": f"{_self.TOKEN_MEMBROS}"
         }
@@ -27,10 +23,6 @@ class Files:
 
     @st.cache_data
     def projeto(_self):
-        # return pd.read_csv(
-        #     f"{_self.path}/projeto.csv", 
-        #     sep=";"
-        # )
         headers = {
             "Authorization": f"{_self.TOKEN_PROJETO}"
         }
@@ -38,4 +30,10 @@ class Files:
 
         dados = resp.json()
 
-        return pd.DataFrame(dados['data'])
+        df = pd.DataFrame(dados['data'])
+
+        df["ano_projeto"] = df["ano_projeto"].astype(int)
+
+        df = df[(df['ano_projeto'] > 2016) & (df['ano_projeto'] < 2030)]
+
+        return df

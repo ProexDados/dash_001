@@ -1,7 +1,7 @@
 import streamlit as st
 from services.get_files import Files
+from components.filtros import Filtros
 import pandas as pd
-from components.components import Components
 import altair as alt
 
 
@@ -38,6 +38,8 @@ with st.container():
 
 # -------- OBTEM DADOS --------
 file = Files()
+filtros = Filtros()
+
 df_projeto = file.projeto()
 df_membro = file.membro_projeto()
 
@@ -51,15 +53,14 @@ df_projeto = df_projeto[
 ]
 
 df_projeto["id_projeto"] = df_projeto["id_projeto"].astype(int)
-df_projeto["ano_projeto"] = pd.to_numeric(df_projeto["ano_projeto"])
 
 df_membro["id_projeto"] = df_membro["id_projeto"].astype(int)
 
 df_participantes = pd.merge(
-    df_membro, 
     df_projeto, 
+    df_membro, 
     on="id_projeto", 
-    how="outer"
+    how="left"
 )
 
 df_filtrado = df_participantes.copy()
@@ -69,43 +70,13 @@ with st.sidebar:
     st.title("Filtros")
     
     # ----------- ANO -----------
-    if "filtro_ano" not in st.session_state:
-        st.session_state.filtro_ano = None
-
-    ano_filtro = st.multiselect(
-        "Filtrar por Ano:",
-        sorted(df_participantes["ano_projeto"].dropna().astype(int).unique()),
-        default=st.session_state.filtro_ano,
-    )
-
-    if len(ano_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["ano_projeto"].isin(ano_filtro)]
+    df_filtrado = filtros.filtro_ano(df_participantes, "ano_projeto", df_filtrado)
 
     # ---------- CENTRO ---------
-    if "filtro_centro" not in st.session_state:
-        st.session_state.filtro_centro = None
+    df_filtrado = filtros.filtro_centro(df_participantes, "centro", df_filtrado)
 
-    centro_filtro = st.multiselect(
-        "Filtrar por Centro:",
-        sorted(df_participantes["centro"].dropna().unique()),
-        default=st.session_state.filtro_centro
-    )
-
-    if len(centro_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["centro"].isin(centro_filtro)]
-
-    # -------- CATEGORIA --------
-    if "filtro_categoria_membro" not in st.session_state:
-        st.session_state.filtro_categoria_membro = None
-
-    categoria_filtro = st.multiselect(
-        "Filtrar por categoria:",
-        sorted(df_participantes["categoria_membro"].dropna().unique()),
-        default=st.session_state.filtro_categoria_membro
-    )
-
-    if len(categoria_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["categoria_membro"].isin(categoria_filtro)]
+    # -------- PARTICIPANTE --------
+    df_filtrado = filtros.filtro_participante(df_participantes, "categoria_membro", df_filtrado)
 
 # ------------------------------------------------------------------------------
 df_lista = df_filtrado[
@@ -133,6 +104,8 @@ df_lista = df_lista.rename(
     }
 )
 
+df_lista = df_lista.drop_duplicates().dropna()
+
 # ------------------------------------------------------------------------------
 df_bolsa = df_filtrado[['tipo_bolsa', 'categoria_bolsa']]
 
@@ -141,12 +114,6 @@ qtd_bolsa = (
     .groupby('tipo_bolsa', as_index=False)['categoria_bolsa']
     .count()
 )
-# qtd_bolsa = qtd_bolsa.rename(
-#     columns={
-#         'tipo_bolsa': 'tipo_bolsa', 
-#         'categoria_bolsa': 'categoria_bolsa'
-#     }
-# )
 
 total = qtd_bolsa['categoria_bolsa'].sum()
 qtd_bolsa['percentual'] = (qtd_bolsa['categoria_bolsa'] / total)
@@ -154,7 +121,7 @@ qtd_bolsa['percentual'] = (qtd_bolsa['categoria_bolsa'] / total)
 base = alt.Chart(qtd_bolsa)
 
 # Ordenar os dados pela categoria ou valor, garantindo que as fatias e textos coincidam
-pizza = base.mark_arc(innerRadius=100).encode(
+pizza = base.mark_arc(innerRadius=70).encode(
     # 'stack=True' garante que as fatias sejam empilhadas proporcionalmente
     theta=alt.Theta("percentual:Q", stack=True),
     color=alt.Color("tipo_bolsa:N", title="Tipo bolsa"),
@@ -168,7 +135,7 @@ pizza = base.mark_arc(innerRadius=100).encode(
 
 # Texto centralizado nas fatias
 texto = base.mark_text(
-    radius=120,  # Distância do centro. Aumente para afastar do meio.
+    radius=100,  # Distância do centro. Aumente para afastar do meio.
     size=14, 
     fontWeight="bold",
     fill="black" # Ou "white" se a fatia for muito escura
@@ -181,40 +148,65 @@ texto = base.mark_text(
 )
 
 graf_bolsa = (pizza + texto).properties(
-    width=350,
-    height=350,
+    width=315,
+    height=315,
     title="Tipo de bolsa"
 ).configure_view(
     strokeWidth=0  # Remove a borda externa do gráfico
+).configure_title(
+    fontSize=20
 )
 
 # ------------------------------------------------------------------------------
 df_ano = df_filtrado[['id_projeto', 'ano_projeto', 'total_discentes_envolvidos']]
 df_ano = df_ano.drop_duplicates(subset=['id_projeto'])
+df_ano = df_ano.drop_duplicates()
+df_ano["total_discentes_envolvidos"] = (
+    df_ano["total_discentes_envolvidos"]
+    .fillna(0)
+    .astype(int)
+)
+
 
 df_discentes_ano = df_ano.groupby(["ano_projeto"], as_index=False)["total_discentes_envolvidos"].sum()
 
 graf_discente_ano = (
     alt.Chart(df_discentes_ano)
-    .mark_bar()
+    .mark_bar(color="#009553")
     .encode(
         x=alt.X(
             "ano_projeto:N",
-            title="Ano"
+            axis=alt.Axis(labelAngle=45),
+            title=None
         ),
         y=alt.Y(
             "total_discentes_envolvidos:Q",
-            title="Total"
+            title=None
         ),
         tooltip=[
-            alt.Tooltip("ano_projeto:N", title="Categoria"),
+            alt.Tooltip("ano_projeto:N", title="Ano"),
             alt.Tooltip("total_discentes_envolvidos:Q", title="Quantidade")
         ],
         order=alt.Order("ano_projeto:N")
     )
+)
+
+texto = graf_discente_ano.mark_text(
+    align="center", dy=-5
+).encode(
+    text=alt.Text(
+        "total_discentes_envolvidos:Q"
+    )
+)
+
+graf_final_discente = (
+    (graf_discente_ano + texto)
     .properties(
-        height=350,
-        title="Total de discentes envolvidos por ano"
+        height=315,
+        title="Total de Discentes envolvidos por Ano"
+    )
+    .configure_title(
+        fontSize=20
     )
 )
 
@@ -227,13 +219,6 @@ qtd_membro = (
     .groupby('categoria_membro', as_index=False)['id_projeto']
     .count()
 )
-
-# qtd_membro = qtd_membro.rename(
-#     columns={
-#         'categoria_membro': 'categoria_membro', 
-#         'id_projeto': 'id_projeto'
-#     }
-# )
 
 total = qtd_membro['id_projeto'].sum()
 qtd_membro['percentual'] = (qtd_membro['id_projeto'] / total)
@@ -255,7 +240,7 @@ pizza = base.mark_arc().encode(
 
 # Texto centralizado nas fatias
 texto = base.mark_text(
-    radius=110,  # Distância do centro. Aumente para afastar do meio.
+    radius=90,  # Distância do centro. Aumente para afastar do meio.
     size=14, 
     fontWeight="bold",
     fill="black" # Ou "white" se a fatia for muito escura
@@ -268,39 +253,68 @@ texto = base.mark_text(
 )
 
 graf_membro = (pizza + texto).properties(
-    width=350,
-    height=350,
+    width=315,
+    height=315,
     title="Tipo de vínculo do extensionista"
 ).configure_view(
     strokeWidth=0  # Remove a borda externa do gráfico
+).configure_title(
+    fontSize=20
 )
 
 # ------------------------------------------------------------------------------
-df_discentes = df_filtrado.groupby(["centro"], as_index=False)["total_discentes_envolvidos"].sum()
+df_discentes_centro = df_filtrado[["centro", "total_discentes_envolvidos"]]
+df_discentes_centro = df_discentes_centro.drop_duplicates()
+df_discentes_centro["total_discentes_envolvidos"] = (
+    df_discentes_centro["total_discentes_envolvidos"]
+    .fillna(0)
+    .astype(int)
+)
+
+df_discentes = df_discentes_centro.groupby(["centro"], as_index=False)["total_discentes_envolvidos"].sum()
 
 graf_discente = (
     alt.Chart(df_discentes)
-    .mark_bar()
+    .mark_bar(color="#EF4136")
     .encode(
         y=alt.Y(
             "centro:N",
-            title="Centro"
+            sort="-x",
+            title=None
         ),
         x=alt.X(
             "total_discentes_envolvidos:Q",
-            sort="-x",
-            title="Total"
+            axis=alt.Axis(labelAngle=45),
+            title=None
         ),
         tooltip=[
             alt.Tooltip("centro:N", title="Categoria"),
             alt.Tooltip("total_discentes_envolvidos:Q", title="Quantidade")
         ]
     )
-    .properties(
-        height=350,
-        title="Taxa de discentes envolvidos por centro"
+)
+
+texto = graf_discente.mark_text(
+    align="left",
+    dx=5
+).encode(
+    text=alt.Text(
+        "total_discentes_envolvidos:Q"
     )
 )
+
+graf_discente_centro = (
+    (graf_discente + texto)
+    .properties(
+        height=350,
+        title="Total de Discentes envolvidos por Centro"
+    )
+    .configure_title(
+        fontSize=20
+    )
+)
+
+# ---------------------------------------------------------------------------
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -308,21 +322,24 @@ with st.container():
     col_1, col_2, col_3 = st.columns(3)
 
     with col_1:
-        st.altair_chart(graf_bolsa, use_container_width=True)
+        with st.container(height=350):
+            st.altair_chart(graf_bolsa, use_container_width=True)
     
     with col_2:
-        st.altair_chart(graf_discente_ano, use_container_width=True)
+        with st.container(height=350):
+            st.altair_chart(graf_final_discente, use_container_width=True)
 
     with col_3:
-        st.altair_chart(graf_membro, use_container_width=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
+        with st.container(height=350):
+            st.altair_chart(graf_membro, use_container_width=True)
 
 with st.container():
     col_1, col_2 = st.columns(2)
 
     with col_1:
-        st.dataframe(df_lista, hide_index=True, height=350)
+        with st.container(height=385):
+            st.dataframe(df_lista, hide_index=True, height=350)
 
     with col_2:
-        st.altair_chart(graf_discente, use_container_width=True)
+        with st.container(height=385):
+            st.altair_chart(graf_discente_centro, use_container_width=True)

@@ -1,6 +1,6 @@
 import streamlit as st
 from services.get_files import Files
-from components.components import Components
+from components.filtros import Filtros
 import altair as alt
 import pandas as pd
 import numpy as np
@@ -47,64 +47,33 @@ with st.container():
 
 # -------- OBTEM DADOS --------
 file = Files()
+filtros = Filtros()
+
 df_projeto = file.projeto()
 df_projeto["ano_projeto"] = pd.to_numeric(df_projeto["ano_projeto"])
+df_projeto = df_projeto[df_projeto["tipo_projeto"] == "EXTENSÃO"]
 
 df_filtrado = df_projeto.copy()
-
-df_filtrado = df_filtrado[df_filtrado['ano_projeto'] < 2030]
 
 # ---------- FILTROS ----------
 with st.sidebar:
     st.title("Filtros")
-    teste = df_projeto[["ano_projeto"]]
-    teste = teste[teste['ano_projeto'] > 2016]
     
     # ----------- ANO -----------
-    if "filtro_ano" not in st.session_state:
-        st.session_state.filtro_ano = sorted(teste["ano_projeto"].unique())
-
-    ano_filtro = st.multiselect(
-        "Filtrar por Ano:",
-        sorted(df_projeto["ano_projeto"].unique()),
-        default=st.session_state.filtro_ano,
-    )
-
-    if len(ano_filtro)> 0:
-        df_filtrado = df_filtrado[df_filtrado["ano_projeto"].isin(ano_filtro)]
+    df_filtrado = filtros.filtro_ano(df_projeto, "ano_projeto", df_filtrado)
 
     # ---------- CENTRO ---------
-    if "filtro_centro" not in st.session_state:
-        st.session_state.filtro_centro = None
-
-    centro_filtro = st.multiselect(
-        "Filtrar por Centro:",
-        sorted(df_projeto["centro"].unique()),
-        default=st.session_state.filtro_centro
-    )
-
-    if len(centro_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["centro"].isin(centro_filtro)]
+    df_filtrado = filtros.filtro_centro(df_projeto, "centro", df_filtrado)
 
     # -------- CATEGORIA --------
-    if "filtro_categoria" not in st.session_state:
-        st.session_state.filtro_categoria = None
-
-    categoria_filtro = st.multiselect(
-        "Filtrar por categoria:",
-        sorted(df_projeto["categoria"].unique()),
-        default=st.session_state.filtro_categoria
-    )
-
-    if len(categoria_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["categoria"].isin(categoria_filtro)]
+    df_filtrado = filtros.filtro_categoria(df_projeto, "categoria", df_filtrado)
 
 
 dados_tema = df_filtrado.groupby(["ano_projeto", "linha_pesquisa_area_tematica"], as_index=False)["id_projeto"].count()
 dados_centro = df_filtrado.groupby(["ano_projeto", "centro"], as_index=False)["id_projeto"].count()
 
 financiamento = df_filtrado.groupby(["data_inicio", "orcamento_consolidado_fundo"], dropna=False, as_index=False).agg(qtd_projetos=('id_projeto', 'count'))
-financiamento["sem_financiamento"] = np.where(financiamento["orcamento_consolidado_fundo"].isna(), financiamento["qtd_projetos"], None)
+financiamento["sem_financiamento"] = np.where(financiamento["orcamento_consolidado_fundo"].isna(), financiamento["qtd_projetos"], 1)
 financiamento["com_financiamento"] = np.where(financiamento["orcamento_consolidado_fundo"].notna(), financiamento["qtd_projetos"], None)
 financiamento["ano"] = financiamento["data_inicio"].str[:4]
 
@@ -127,26 +96,30 @@ graf_tematica = (
     .encode(
         x=alt.X(
             "ano_projeto:O",
-            title="Ano"
+            axis=alt.Axis(labelAngle=45),
+            title=None
         ),
         y=alt.Y(
             "linha_pesquisa_area_tematica:N",
-            title="Status"
+            title=None
         ),
         color=alt.Color(
             "id_projeto:Q",
             title="Quantidade",
-            scale=alt.Scale(scheme="blues")
+            scale=alt.Scale(scheme="greens")
         ),
         tooltip=[
             alt.Tooltip("ano_projeto:O", title="Ano"),
-            alt.Tooltip("linha_pesquisa_area_tematica:N", title="Status"),
+            alt.Tooltip("linha_pesquisa_area_tematica:N", title="Área temática"),
             alt.Tooltip("id_projeto:Q", title="Quantidade")
         ]
     )
     .properties(
-        height=400,
+        height=365,
         title="Quantidade de ações por ano e área temática"
+    )
+    .configure_title(
+        fontSize=20
     )
 )
 
@@ -157,16 +130,17 @@ graf_centro = (
     .encode(
         x=alt.X(
             "ano_projeto:O",
-            title="Ano"
+            axis=alt.Axis(labelAngle=45),
+            title=None
         ),
         y=alt.Y(
             "centro:N",
-            title="Centro"
+            title=None
         ),
         color=alt.Color(
             "id_projeto:Q",
             title="Quantidade",
-            scale=alt.Scale(scheme="purples")
+            scale=alt.Scale(scheme="reds")
         ),
         tooltip=[
             alt.Tooltip("ano_projeto:O", title="Ano"),
@@ -175,41 +149,62 @@ graf_centro = (
         ]
     )
     .properties(
-        height=400,
+        height=365,
         title="Quantidade de ações por ano e centro"
+    )
+    .configure_title(
+        fontSize=20
     )
 )
 
 
 graf = (
     alt.Chart(df_finan)
-    .mark_line()
+    .mark_line(point=alt.OverlayMarkDef(
+            color="#EF4136"
+        )
+    )
     .encode(
-        x=alt.X("ano:T", title="Data"),
-        y=alt.Y("valor:Q", title="Valor"),
-        color=alt.Color("serie:N", scale=alt.Scale(
-        range=["#b41f1f", "#067722"]
-    ),title="Série"),
+        x=alt.X(
+            "ano:T", 
+            title=None
+        ),
+        y=alt.Y(
+            "valor:Q", 
+            title=None
+        ),
+        color=alt.Color(
+            "serie:N", 
+            scale=alt.Scale(
+                range=["#b41f1f", "#067722"]
+            ),title="Série"
+        ),
         tooltip=[
             alt.Tooltip("ano:T"),
             alt.Tooltip("serie:N"),
             alt.Tooltip("valor:Q")
         ]
     )
-    .properties(height=400)
+    .properties(
+        height=300,
+        title="Quantidade de ações por aporte financeiro"
+    )
+    .configure_title(
+        fontSize=20
+    )
 )
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-with st.container():
-    st.altair_chart(graf, use_container_width=True, height=350)
-
-st.markdown("<br>", unsafe_allow_html=True)
+with st.container(height=335):
+    st.altair_chart(graf, use_container_width=True)
 
 with st.container():
     col_1, col_2 = st.columns(2)
     with col_1:
-        st.altair_chart(graf_tematica, use_container_width=True)
+        with st.container(height=400):
+            st.altair_chart(graf_tematica, use_container_width=True)
 
     with col_2:
-        st.altair_chart(graf_centro, use_container_width=True)
+        with st.container(height=400):
+            st.altair_chart(graf_centro, use_container_width=True)

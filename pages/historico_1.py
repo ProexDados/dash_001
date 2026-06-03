@@ -2,8 +2,18 @@ import streamlit as st
 import pandas as pd
 from services.get_files import Files
 from components.components import Components
+from components.filtros import Filtros
 import altair as alt
+from st_aggrid import (
+    AgGrid,
+    GridOptionsBuilder
+)
 
+
+# ===============================================
+# CONFIGURAÇÃO DA PÁGINA
+# ===============================================
+# alt.themes.enable("blank")
 
 # ----------- LAYOUT ----------
 st.set_page_config(
@@ -38,59 +48,141 @@ with st.container():
 
 # -------- OBTEM DADOS --------
 file = Files()
+filtros = Filtros()
+
 df_projeto = file.projeto()
 df_projeto["ano_projeto"] = pd.to_numeric(df_projeto["ano_projeto"])
+df_projeto = df_projeto[df_projeto["tipo_projeto"] == "EXTENSÃO"]
 
 df_filtrado = df_projeto.copy()
-
-df_filtrado = df_filtrado[(df_filtrado['ano_projeto'] > 2016) & (df_filtrado['ano_projeto'] < 2030)]
 
 # ---------- FILTROS ----------
 with st.sidebar:
     st.title("Filtros")
     
     # ----------- ANO -----------
-    if "filtro_ano" not in st.session_state:
-        st.session_state.filtro_ano = None
-
-    ano_filtro = st.multiselect(
-        "Filtrar por Ano:",
-        sorted(df_projeto["ano_projeto"].unique()),
-        default=st.session_state.filtro_ano,
-    )
+    df_filtrado = filtros.filtro_ano(df_projeto, "ano_projeto", df_filtrado)
     
-    if len(ano_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["ano_projeto"].isin(ano_filtro)]
-
     # ---------- CENTRO ---------
-    if "filtro_centro" not in st.session_state:
-        st.session_state.filtro_centro = None
-
-    centro_filtro = st.multiselect(
-        "Filtrar por Centro:",
-        sorted(df_projeto["centro"].unique()),
-        default=st.session_state.filtro_centro
-    )
-
-    if len(centro_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["centro"].isin(centro_filtro)]
+    df_filtrado = filtros.filtro_centro(df_projeto, "centro", df_filtrado)
 
     # -------- CATEGORIA --------
-    if "filtro_categoria" not in st.session_state:
-        st.session_state.filtro_categoria = None
+    df_filtrado = filtros.filtro_categoria(df_projeto, "categoria", df_filtrado)
 
-    categoria_filtro = st.multiselect(
-        "Filtrar por categoria:",
-        sorted(df_projeto["categoria"].unique()),
-        default=st.session_state.filtro_categoria
-    )
+    # -------- SITUAÇÃO --------
+    df_filtrado = filtros.filtro_situacao(df_projeto, "situacao_projeto", df_filtrado)
 
-    if len(categoria_filtro) > 0:
-        df_filtrado = df_filtrado[df_filtrado["categoria"].isin(categoria_filtro)]
 
 df_filtrado = df_filtrado.sort_values(by='ano_projeto', ascending=False)
 
 total_acoes = len(df_filtrado)
+
+# -----------------------------
+df_titulos = df_filtrado[['ano_projeto', 'titulo']]
+
+df_titulos = df_titulos.sort_values("ano_projeto")
+
+df_titulos = df_titulos.rename(
+    columns={
+        "ano_projeto": "Ano Projeto", 
+        "titulo": "Título"
+    }
+)
+
+gb = GridOptionsBuilder.from_dataframe(df_titulos)
+
+gb.configure_column(
+    "Ano Projeto",
+    width=50
+)
+
+gb.configure_column(
+    "Título",
+    width=500
+)
+
+grid_options = gb.build()
+        
+# ---------- GRÁFICOS ---------
+# Agrupa os dados
+dados = df_filtrado.groupby(["ano_projeto", "situacao_projeto"], as_index=False)["id_projeto"].count()
+
+# ações
+graf_acoes = (
+    alt.Chart(dados)
+    .mark_rect()
+    .encode(
+        x=alt.X(
+            "ano_projeto:O",
+            axis=alt.Axis(labelAngle=45),
+            title=None
+        ),
+        y=alt.Y(
+            "situacao_projeto:N",
+            title=None
+        ),
+        color=alt.Color(
+            "id_projeto:Q",
+            title="Quantidade",
+            scale=alt.Scale(scheme="reds")
+        ),
+        tooltip=[
+            alt.Tooltip("ano_projeto:O", title="Ano"),
+            alt.Tooltip("situacao_projeto:N", title="Situação"),
+            alt.Tooltip("id_projeto:Q", title="Quantidade")
+        ]
+    )
+    .properties(
+        height=465,
+        title="Ações pela situação do projeto"
+    )
+    .configure_title(
+        fontSize=20
+    )
+)
+
+# categorias
+dados_categoria = df_filtrado.groupby(["categoria"], as_index=False)["numero_projeto"].count()
+
+graf_categoria = (
+    alt.Chart(dados_categoria)
+    .mark_bar(color="#009553")
+    .encode(
+        y=alt.Y(
+            "numero_projeto:Q",
+            title=None
+        ),
+        x=alt.X(
+            "categoria:N",
+            sort="-y",
+            axis=alt.Axis(labelAngle=45),
+            title=None
+        ),
+        tooltip=[
+            alt.Tooltip("categoria:N", title="Categoria"),
+            alt.Tooltip("numero_projeto:Q", title="Quantidade")
+        ]
+    )
+)
+
+texto = graf_categoria.mark_text(
+    align="center", dy=-5
+).encode(
+    text=alt.Text(
+        "numero_projeto:Q"
+    )
+)
+
+graf_final_categoria = (
+    (graf_categoria + texto)
+    .properties(
+        height=465,
+        title="Quantidade de ações por tipos de atividades de extensão"
+    )
+    .configure_title(
+        fontSize=20
+    )
+)
 
 # --------- DASHBOARD ---------
 st.markdown("<br>", unsafe_allow_html=True)
@@ -100,79 +192,28 @@ with st.container():
 
     with col_1:
         components = Components()
-        components.metric_card("Total Ações", total_acoes, "", "#424242")
+        with st.container(height=235):
+            components.metric_card("Total Ações", total_acoes, "", "#424242")
 
     with col_2:
-        st.dataframe(df_filtrado[['ano_projeto', 'titulo']], hide_index=True, height=200)
-
-# ---------- GRÁFICOS ---------
-# Agrupa os dados
-dados = df_filtrado.groupby(["ano_projeto", "situacao_projeto"], as_index=False)["id_projeto"].count()
-dados_categoria = df_filtrado.groupby(["categoria"], as_index=False)["numero_projeto"].count()
-
-# ações
-graf_acoes = (
-    alt.Chart(dados)
-    .mark_rect()
-    .encode(
-        x=alt.X(
-            "ano_projeto:O",
-            title="Ano"
-        ),
-        y=alt.Y(
-            "situacao_projeto:N",
-            title="Status"
-        ),
-        color=alt.Color(
-            "id_projeto:Q",
-            title="Quantidade",
-            scale=alt.Scale(scheme="purples")
-        ),
-        tooltip=[
-            alt.Tooltip("ano_projeto:O"),
-            alt.Tooltip("situacao_projeto:N"),
-            alt.Tooltip("id_projeto:Q")
-        ]
-    )
-    .properties(
-        height=400,
-        title="Ações pela situação do projeto"
-    )
-)
-
-# categorias
-graf_categoria = (
-    alt.Chart(dados_categoria)
-    .mark_bar()
-    .encode(
-        y=alt.Y(
-            "numero_projeto:Q",
-            title="Quantidade"
-        ),
-        x=alt.X(
-            "categoria:N",
-            sort="-y",
-            title="Categoria"
-        ),
-        tooltip=[
-            alt.Tooltip("categoria:N", title="Categoria"),
-            alt.Tooltip("numero_projeto:Q", title="Quantidade")
-        ]
-    )
-    .properties(
-        height=400,
-        title="Quantidade de ações por tipos de atividades de extensão"
-    )
-)
-
-st.markdown("<br>", unsafe_allow_html=True)
+        with st.container(height=235):
+            grid_response = AgGrid(
+                df_titulos,
+                gridOptions=grid_options,
+                height=195,
+                width="100%",
+                fit_columns_on_grid_load=False,
+                theme="streamlit",  # alpine | balham | material
+                enable_enterprise_modules=False
+            )
 
 with st.container():
     col_1, col_2 = st.columns(2)
 
-# Exibe no dashboard
     with col_1:
-        st.altair_chart(graf_acoes, use_container_width=True, height=500)
+        with st.container(height=500):
+            st.altair_chart(graf_acoes, use_container_width=True)
 
     with col_2:
-        st.altair_chart(graf_categoria, use_container_width=True, height=500)
+        with st.container(height=500):
+            st.altair_chart(graf_final_categoria, use_container_width=True)
