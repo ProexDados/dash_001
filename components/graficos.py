@@ -13,6 +13,7 @@ class Graficos:
         self.formatacao = Formatacao()
         self.config     = Configuracoes()
         self.tema       = self.config.tema()
+        self.cor_texto  = "white" if self.tema == "dark" else "black"
 
 
     # -- HISTÓRICO 1 -------------
@@ -83,12 +84,10 @@ class Graficos:
             )
         )
 
-        cor_texto = "white" if self.tema == "dark" else "black"
-
         texto = graf_categoria.mark_text(
             align="center", 
             dy=-5,
-            color=cor_texto
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "numero_projeto:Q"
@@ -245,12 +244,10 @@ class Graficos:
             )
         )
 
-        cor_texto = "white" if self.tema == "dark" else "black"
-
         texto = graf_acoes_centro.mark_text(
             align="center", 
             dy=-5,
-            color=cor_texto
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "id_projeto:Q"
@@ -308,7 +305,9 @@ class Graficos:
         )
 
         texto = graf_discente_ano.mark_text(
-            align="center", dy=-5
+            align="center", 
+            dy=-5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "total_discentes_envolvidos:Q"
@@ -418,7 +417,8 @@ class Graficos:
 
         texto = graf_discente.mark_text(
             align="left",
-            dx=5
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "total_discentes_envolvidos:Q"
@@ -552,7 +552,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_extensionistas.mark_text(
             align="left",
-            dx=5  # deslocamento à direita
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "percentual:Q",
@@ -682,7 +683,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_extensionistas_tematica.mark_text(
             align="left",
-            dx=5  # deslocamento à direita
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "percentual:Q",
@@ -979,6 +981,10 @@ class Graficos:
 
         df_atuacoes = df_atuacoes_acoes.groupby(["linha_atuacao"], as_index=False)["id_projeto"].count()
 
+        altura_linha = 35
+
+        altura_grafico = len(df_atuacoes) * altura_linha
+
         graf_atuacoes = (
             alt.Chart(df_atuacoes)
             .mark_bar(color="#009553")
@@ -998,8 +1004,22 @@ class Graficos:
                     alt.Tooltip("id_projeto:Q", title="Quantidade")
                 ]
             )
+        )
+
+        texto = graf_atuacoes.mark_text(
+            align="left",
+            dx=5,
+            color=self.cor_texto
+        ).encode(
+            text=alt.Text(
+                "id_projeto:N"
+            )
+        )
+
+        graf_final_atuacoes = (
+            (graf_atuacoes + texto)
             .properties(
-                height=715,
+                height=altura_grafico,
                 title="Ações por Linha de Atuação"
             )
             .configure_title(
@@ -1007,7 +1027,7 @@ class Graficos:
             )
         )
 
-        return graf_atuacoes
+        return graf_final_atuacoes
 
 
     # -- ORÇAMENTO ---------------
@@ -1065,7 +1085,9 @@ class Graficos:
 
         # camada de texto (percentual no fim da barra)
         texto = graf_orcamento_ano.mark_text(
-            align="center", dy=-5
+            align="center", 
+            dy=-5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "valor_formatado:N"
@@ -1249,7 +1271,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_orcamento.mark_text(
             align="left",
-            dx=5
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "valor_formatado:N"
@@ -1389,7 +1412,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_acao_centro.mark_text(
             align="left",
-            dx=5
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "data_inicio:N"
@@ -1465,7 +1489,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_coordenador_centro.mark_text(
             align="left",
-            dx=5  # deslocamento à direita
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "percentual:Q",
@@ -1536,7 +1561,8 @@ class Graficos:
         # camada de texto (percentual no fim da barra)
         texto = graf_acao_coordenador.mark_text(
             align="left",
-            dx=5
+            dx=5,
+            color=self.cor_texto
         ).encode(
             text=alt.Text(
                 "id_projeto:N"
