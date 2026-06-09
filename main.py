@@ -1,11 +1,5 @@
 import streamlit as st
-import altair as alt
 
-
-# ===============================================
-# CONFIGURAÇÃO DA PÁGINA
-# ===============================================
-alt.themes.enable("dark")
 
 # ===============================================
 # NAVEGAÇÃO

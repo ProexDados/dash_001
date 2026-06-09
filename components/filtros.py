@@ -4,6 +4,7 @@ class Filtros:
     def __init__(self):
         ...
 
+
     # -- ANO -------------
     def filtro_ano(self, df, coluna, df_filtrado):
         if "filtro_ano" not in st.session_state:
@@ -20,6 +21,7 @@ class Filtros:
         
         return df_filtrado
     
+
     # -- CENTRO ----------
     def filtro_centro(self, df, coluna, df_filtrado):
         if "filtro_centro" not in st.session_state:
@@ -35,6 +37,7 @@ class Filtros:
             return df_filtrado[df_filtrado[coluna].isin(centro_filtro)]
         
         return df_filtrado
+
 
     # -- CATEGORIA ---------
     def filtro_categoria(self, df, coluna, df_filtrado):
@@ -52,6 +55,7 @@ class Filtros:
         
         return df_filtrado
     
+
     # -- SITUACAO --------
     def filtro_situacao(self, df, coluna, df_filtrado):
         if "filtro_situacao" not in st.session_state:
@@ -67,6 +71,7 @@ class Filtros:
             return df_filtrado[df_filtrado[coluna].isin(situacao_filtro)]
         
         return df_filtrado
+
 
     # -- PARTICIPANTE ----
     def filtro_participante(self, df, coluna, df_filtrado):
@@ -84,6 +89,7 @@ class Filtros:
         
         return df_filtrado
     
+
     # -- TITULO ----------
     def filtro_titulo(self, df, coluna, df_filtrado):
         if "filtro_titulo" not in st.session_state:
@@ -99,6 +105,7 @@ class Filtros:
             return df_filtrado[df_filtrado[coluna].isin(titulo_filtro)]
         
         return df_filtrado
+
 
     # -- ID PROJETO ------
     def filtro_id_projeto(self, df, coluna, df_filtrado):
@@ -116,6 +123,7 @@ class Filtros:
         
         return df_filtrado
 
+
     # -- COORDENADOR -----
     def filtro_coordenador(self, df, coluna, df_filtrado):
         if "filtro_coordenador" not in st.session_state:
@@ -131,3 +139,4 @@ class Filtros:
             return df_filtrado[df_filtrado[coluna].isin(coordenador_filtro)]
         
         return df_filtrado
+    
