@@ -5,8 +5,8 @@ import streamlit as st
 
 class Files:
     def __init__(self):
-        self.TOKEN_PROJETO = st.secrets["file"]["TOKEN_PROJETO"]
-        self.TOKEN_MEMBROS = st.secrets["file"]["TOKEN_MEMBRO"]
+        self.TOKEN_PROJETO = 'Bearer a5a9509b2441d3020afa7e55b5eb1494'  # st.secrets["file"]["TOKEN_PROJETO"]
+        self.TOKEN_MEMBROS = 'Bearer b60781fd04476970b424556b23cc80ac'  # st.secrets["file"]["TOKEN_MEMBRO"]
         self.URL = 'https://dados.sistemas.udesc.br/ResourceManager/DataAccessWs/getDataList'   # st.secrets["file"]["URL"]
 
 
