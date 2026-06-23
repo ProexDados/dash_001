@@ -1,11 +1,11 @@
 import streamlit as st
-from dash.config.settings import Configuracoes
-from dash.components.titulos import Titulo
+from config.settings import Configuracoes
+from components.titulos import Titulo
 from services.get_files import Files
-from dash.components.filtros import Filtros
+from components.filtros import Filtros
 from utils.formatacao import Formatacao
-from dash.components.components import Components
-from dash.components.graf_publico import Graficos
+from components.components import Components
+from components.graf_publico import Graficos
 
 
 # ---------- OBJETOS ----------
