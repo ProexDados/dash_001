@@ -7,7 +7,7 @@ class Files:
     def __init__(self):
         self.TOKEN_PROJETO = st.secrets["file"]["TOKEN_PROJETO"]
         self.TOKEN_MEMBROS = st.secrets["file"]["TOKEN_MEMBRO"]
-        self.URL = st.secrets["file"]["URL"]
+        self.URL = 'https://dados.sistemas.udesc.br/ResourceManager/DataAccessWs/getDataList'   # st.secrets["file"]["URL"]
 
 
     @st.cache_data
