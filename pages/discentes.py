@@ -1,13 +1,13 @@
 import pandas as pd
 import streamlit as st
-from config.settings import Configuracoes
+from dash.config.settings import Configuracoes
 from services.get_files import Files
-from components.titulos import Titulo
-from components.components import Components
-from components.filtros import Filtros
+from dash.components.titulos import Titulo
+from dash.components.components import Components
+from dash.components.filtros import Filtros
 from utils.formatacao import Formatacao
-from components.tabelas import Tabelas
-from components.graf_discentes import Graficos
+from dash.components.tabelas import Tabelas
+from dash.components.graf_discentes import Graficos
 
 
 # ---------- OBJETOS ----------
