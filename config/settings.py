@@ -33,3 +33,11 @@ class Configuracoes:
 
     def tema(self):
         return st.get_option("theme.base")
+    
+
+    def graficos_verde(self):
+        return "#009553"
+    
+
+    def graficos_vermelho(self):
+        return "#EF4136"

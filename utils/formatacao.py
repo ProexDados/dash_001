@@ -5,19 +5,15 @@ class Formatacao:
         ...
 
 
-    def formatar_valor_float(self, df):
-        df["valor_formatado"] = (
-            df["orcamento_consolidado_fundo"]
-            .apply(
-                lambda x:
-                f"R$ {x:,.2f}"
-                .replace(",", "X")
-                .replace(".", ",")
-                .replace("X", ".")
-            )
+    def formatar_valor_float(self, valor):
+        valor = (
+            f"{valor:,.2f}"
+            .replace(",", "X")
+            .replace(".", ",")
+            .replace("X", ".")
         )
 
-        return df 
+        return valor 
     
 
     def formatar_valor_integer(self, valor):

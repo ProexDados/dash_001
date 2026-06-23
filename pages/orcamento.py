@@ -1,10 +1,12 @@
 import streamlit as st
 from config.settings import Configuracoes
-from components.titulos import Titulo
 from services.get_files import Files
-from components.filtros import Filtros
-from components.graficos import Graficos
+from components.titulos import Titulo
 from components.components import Components
+from components.filtros import Filtros
+from utils.formatacao import Formatacao
+from components.tabelas import Tabelas
+from components.graf_orcamentos import Graficos
 
 
 # ---------- OBJETOS ----------
@@ -13,6 +15,8 @@ config     = Configuracoes()
 titulo     = Titulo()
 file       = Files()
 filtros    = Filtros()
+formatacao = Formatacao()
+tabela     = Tabelas()
 graficos   = Graficos()
 components = Components()
 
@@ -34,80 +38,72 @@ titulo.titulo("ORÇAMENTO", tema)
 
 # -------- OBTEM DADOS --------
 
-df_projeto = file.projeto()
+df_participantes = file.participantes()
 
-df_filtrado = df_projeto.copy()
+df_sem_ano = df_participantes.copy()
 
 # ---------- FILTROS ----------
 
 with st.sidebar:
     st.title("Filtros")
     
-    # ----------- ANO -----------
-    df_filtrado = filtros.filtro_ano(df_projeto, "ano_projeto", df_filtrado)
-
     # ---------- CENTRO ---------
-    df_filtrado = filtros.filtro_centro(df_projeto, "centro", df_filtrado)
+    df_sem_ano = filtros.filtro_centro(df_participantes, "centro", df_sem_ano)
+    
+    # ----------- ANO -----------
+    df_filtrado = filtros.filtro_ano(df_participantes, "ano_projeto", df_sem_ano, "Ano da Ação")
 
 # ----------- CARDS -----------
 
-areas_tematicas = (
-    df_filtrado[
-        [
-            'centro'
-        ]
-    ]
-    .drop_duplicates()
-    .count()
-)
+df_orcamento = df_filtrado.drop_duplicates(subset="id_projeto")
+
+orcamento_total = "R$ " + formatacao.formatar_valor_float(df_orcamento['orcamento_consolidado_fundo'].sum())
 
 # ---------- GRÁFICOS ---------
 
-# orçamento por ano
-graf_final_orcamento = graficos.orcamento_ano(df_filtrado)
+graf_acoes_aporte = graficos.acoes_aporte(df_sem_ano)
 
-# orçamento anual por centro
-graf_centro = graficos.orcamento_centro(df_filtrado)
+graf_taxa_financiamento = graficos.projetos_financiados(df_filtrado)
 
-# orçamento por área temática
-fig_radar = graficos.orcamento_area(df_filtrado)
+graf_orcamento_ano = graficos.orcamento_ano(df_sem_ano)
 
-# orçamento por linha de atuação
-graf_barra_orcamento = graficos.orcamento_atuacao(df_filtrado)
+graf_radar_orcamento_tematica = graficos.orcamento_area(df_filtrado)
 
-# projetos com e sem financiamento
-graf_financiamento = graficos.projetos_financiados(df_filtrado)
+graf_orcamento_atuacao = graficos.orcamento_atuacao(df_filtrado)
+
+graf_orcamento_centro = graficos.orcamento_centro(df_filtrado)
 
 # --------- DASHBOARD ---------
 
-st.markdown("<br>", unsafe_allow_html=True)
-
-col_1, col_2, col_3 = st.columns((0.33, 0.33, 0.34))
+col_1, col_2, col_3 = st.columns((3, 3, 4))
 
 with col_1:
-    # card
-    with st.container(height=235):
-        components.metric_card("Unidades Gestoras", areas_tematicas['centro'], "", "#424242")
+    with st.container(height=185):
+        components.metric_card(
+            label="Orçamento Total", 
+            value=orcamento_total, 
+            delta="", 
+            bg_color="#424242"
+        )
 
-    # orçamento por ano
-    with st.container(height=500):
-        st.altair_chart(graf_final_orcamento, use_container_width=True)
+    with st.container(height=280):
+        st.altair_chart(graf_orcamento_ano)
+
+    with st.container(height=280):
+        st.plotly_chart(graf_radar_orcamento_tematica, config={"staticPlot": False})
 
 with col_2:
-    # orçamento anual por centro
-    with st.container(height=355):
-        st.altair_chart(graf_centro, use_container_width=True)
+    with st.container(height=275):
+        st.altair_chart(graf_taxa_financiamento)
 
-    # orçamento por área temática
-    with st.container(height=380):
-        st.plotly_chart(fig_radar, use_container_width=True, config={"staticPlot": False})
+    with st.container(height=485):
+        st.altair_chart(graf_orcamento_atuacao)
 
 with col_3:
-    # orçament opor linha de atuação
-    with st.container(height=355):
-        st.altair_chart(graf_barra_orcamento, use_container_width=True)
+    with st.container(height=385):
+        st.altair_chart(graf_acoes_aporte)
 
-    # projetos com e sem financiamento
-    with st.container(height=380):
-        st.altair_chart(graf_financiamento, use_container_width=True)
-        
+    with st.container(height=375):
+        st.altair_chart(graf_orcamento_centro)
+
+    

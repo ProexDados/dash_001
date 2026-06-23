@@ -5,9 +5,9 @@ import streamlit as st
 
 class Files:
     def __init__(self):
-        self.TOKEN_PROJETO = "Bearer a5a9509b2441d3020afa7e55b5eb1494"
-        self.TOKEN_MEMBROS = "Bearer b60781fd04476970b424556b23cc80ac"
-        self.URL = "https://dados.sistemas.udesc.br/ResourceManager/DataAccessWs/getDataList"
+        self.TOKEN_PROJETO = st.secrets["file"]["TOKEN_PROJETO"]
+        self.TOKEN_MEMBROS = st.secrets["file"]["TOKEN_MEMBRO"]
+        self.URL = st.secrets["file"]["URL"]
 
 
     @st.cache_data
@@ -46,21 +46,7 @@ class Files:
     @st.cache_data
     def participantes(_self):
         df_projeto = _self.projeto()
-        df_membro = _self.membro_projeto()
-
-        df_projeto = df_projeto[
-            [
-                "id_projeto", 
-                "ano_projeto", 
-                "centro", 
-                "total_discentes_envolvidos",
-                "data_inicio",
-                "bolsas_concedidas",
-                "linha_pesquisa_area_tematica",
-                "tipo_projeto",
-                "coordenador"
-            ]
-        ]
+        df_membro  = _self.membro_projeto()
 
         df_projeto["id_projeto"] = df_projeto["id_projeto"].astype(int)
 

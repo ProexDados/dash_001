@@ -5,7 +5,7 @@ class Components:
     def __init__(self):
         ...
 
-    def metric_card(self, label, value, delta, bg_color):
+    def metric_card(self, label, value, delta, height="150px", bg_color=None, font_size="42px"):
         st.markdown(
             f"""
             <div style="
@@ -13,14 +13,15 @@ class Components:
                 padding: 10px;
                 border-radius: 10px;
                 text-align: center;
-                height: 200px;
+                height: {height};
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
+                justify-content: center;
+                gap: 0px;
             ">
-                <p style="color: white; font-weight: bold;">{label}</p>
-                <h1 style="color: white;">{value}</h1>
-                <p style="color: white;">{delta}</p>
+                <p style="color: white; font-weight: bold; margin: 0; font-size: 16px;">{label}</p>
+                <h1 style="color: white; font-size: {font_size};">{value}</h1>
+                <p style="color: white; font-size: 12px;">{delta}</p>
             </div>
             """,
             unsafe_allow_html=True

@@ -6,12 +6,12 @@ class Filtros:
 
 
     # -- ANO -------------
-    def filtro_ano(self, df, coluna, df_filtrado):
+    def filtro_ano(self, df, coluna, df_filtrado, label):
         if "filtro_ano" not in st.session_state:
             st.session_state.filtro_ano = None
 
         ano_filtro = st.multiselect(
-            "Filtrar por Ano:",
+            label,
             sorted(df[coluna].unique()),
             default=st.session_state.filtro_ano,
         )
@@ -28,7 +28,7 @@ class Filtros:
             st.session_state.filtro_centro = None
 
         centro_filtro = st.multiselect(
-            "Filtrar por Centro:",
+            "Centro do Projeto:",
             sorted(df[coluna].dropna().unique()),
             default=st.session_state.filtro_centro
         )
@@ -45,7 +45,7 @@ class Filtros:
             st.session_state.filtro_categoria = None
 
         categoria_filtro = st.multiselect(
-            "Filtrar por categoria:",
+            "Categoria:",
             sorted(df[coluna].unique()),
             default=st.session_state.filtro_categoria
         )
@@ -62,7 +62,7 @@ class Filtros:
             st.session_state.filtro_situacao = None
 
         situacao_filtro = st.multiselect(
-            "Filtrar por situacao:",
+            "Situacao:",
             sorted(df[coluna].unique()),
             default=st.session_state.filtro_situacao
         )
@@ -79,7 +79,7 @@ class Filtros:
             st.session_state.filtro_participante = None
 
         categoria_filtro = st.multiselect(
-            "Filtrar por participante:",
+            "Categoria do Participante:",
             sorted(df[coluna].dropna().unique()),
             default=st.session_state.filtro_participante
         )
@@ -96,7 +96,7 @@ class Filtros:
             st.session_state.filtro_titulo = None
 
         titulo_filtro = st.multiselect(
-            "Filtrar por Título:",
+            "Título do Projeto:",
             sorted(df[coluna].astype(str).unique()),
             default=st.session_state.filtro_titulo,
         )
@@ -113,7 +113,7 @@ class Filtros:
             st.session_state.filtro_id_projeto = None
 
         id_projeto_filtro = st.multiselect(
-            "Filtrar por ID Projeto:",
+            "ID do Projeto:",
             sorted(df[coluna].dropna().unique()),
             default=st.session_state.filtro_id_projeto
         )
@@ -130,7 +130,7 @@ class Filtros:
             st.session_state.filtro_coordenador = None
 
         coordenador_filtro = st.multiselect(
-            "Filtrar por Coordenador:",
+            "Coordenador do Projeto:",
             sorted(df[coluna].dropna().unique()),
             default=st.session_state.filtro_coordenador
         )

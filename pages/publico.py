@@ -5,7 +5,7 @@ from services.get_files import Files
 from components.filtros import Filtros
 from utils.formatacao import Formatacao
 from components.components import Components
-from components.graficos import Graficos
+from components.graf_publico import Graficos
 
 
 # ---------- OBJETOS ----------
@@ -45,15 +45,6 @@ df_filtrado = df_projeto.copy()
 with st.sidebar:
     st.title("Filtros")
     
-    # ----------- ANO -----------
-    df_filtrado = filtros.filtro_ano(df_projeto, "ano_projeto", df_filtrado)
-
-    # ---------- TÍTULO ---------
-    df_filtrado = filtros.filtro_titulo(df_projeto, "titulo", df_filtrado)
-
-    # -------- ID PROJETO -------
-    df_filtrado = filtros.filtro_id_projeto(df_projeto, "id_projeto", df_filtrado)
-
     # ---------- CENTRO ---------
     df_filtrado = filtros.filtro_centro(df_projeto, "centro", df_filtrado)
 
@@ -132,6 +123,7 @@ with col_1:
             "Público Estimado Interno", 
             publico_interno['publico_estimado_interno'], 
             "", 
+            "205px",
             "#424242"
         )
 
@@ -141,6 +133,7 @@ with col_1:
             "Público Estimado Externo", 
             publico_externo['publico_estimado_externo'], 
             "", 
+            "205px", 
             "#424242"
         )
 
@@ -150,6 +143,7 @@ with col_1:
             "Público Atendido", 
             publico_atendido['publico_atendido'], 
             "", 
+            "205px", 
             "#424242"
         )
 

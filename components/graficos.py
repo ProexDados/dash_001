@@ -229,7 +229,9 @@ class Graficos:
                 x=alt.X(
                     "centro:N",
                     sort="-y",  # ordena pela medida do eixo Y em ordem decrescente
-                    axis=alt.Axis(labelAngle=45),
+                    axis=alt.Axis(
+                        labelAngle=45
+                    ),
                     title=None
                 ),
                 y=alt.Y(

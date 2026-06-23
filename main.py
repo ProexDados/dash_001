@@ -19,17 +19,14 @@ def navegacao():
         """, unsafe_allow_html=True
     )
     
-    page_1 = st.Page("pages/historico_1.py", title="Histórico Geral 1")
-    page_2 = st.Page("pages/historico_2.py", title="Histórico Geral 2")
-    page_3 = st.Page("pages/participantes_1.py", title="Participantes 1")
-    page_4 = st.Page("pages/participantes_2.py", title="Participantes 2")
-    page_5 = st.Page("pages/area_tematica_1.py", title="Área Temática 1")
-    page_6 = st.Page("pages/area_tematica_2.py", title="Área Temática 2")
+    page_1 = st.Page("pages/historico.py", title="Histórico Geral")
+    page_2 = st.Page("pages/participantes.py", title="Participantes")
+    page_3 = st.Page("pages/coordenadores.py", title="Coordenadores")
+    page_4 = st.Page("pages/discentes.py", title="Discentes")
+    page_5 = st.Page("pages/area_tematica.py", title="Área Temática")
+    page_6 = st.Page("pages/linha_atuacao.py", title="Linha de Atuação")
     page_7 = st.Page("pages/orcamento.py", title="Orçamento")
-    page_8 = st.Page("pages/unidade_ensino.py", title="Unidade de Ensino")
-    page_9 = st.Page("pages/iniciativas_centros.py", title="Iniciativas por Centro")
-    page_10 = st.Page("pages/publico.py", title="Público")
-    page_11 = st.Page("pages/migracao.py", title="Migração")
+    page_8  = st.Page("pages/publico.py", title="Público")
 
     pg = st.navigation(
         [
@@ -40,9 +37,7 @@ def navegacao():
             page_5,
             page_6,
             page_7,
-            page_8,
-            page_9,
-            page_10
+            page_8
         ],
         position="sidebar"
     )
